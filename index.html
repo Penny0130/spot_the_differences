@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>找找看 對對碰</title>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Noto+Sans+TC:wght@700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Base styles and Elder-friendly font settings */
+        body {
+            font-family: 'M PLUS Rounded 1c', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+            background-color: #fef9c3; /* Warm, friendly yellow-100 background */
+            touch-action: manipulation; /* Disable double-tap zoom for better playability */
+        }
+
+        /* Card layout styles */
+        .game-card {
+            aspect-ratio: 1 / 1;
+            width: 100%;
+            max-width: 320px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 6px solid #1e3a8a; /* Blue-900 */
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        /* Interactive Icon styles */
+        .card-icon {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            transition: transform 0.2s, filter 0.2s;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Added text-shadow to make emojis pop more */
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .card-icon:active {
+            transform: translate(-50%, -50%) scale(0.85);
+            filter: brightness(0.8);
+        }
+
+        /* Animations */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .animate-pop {
+            animation: pop 0.4s ease-in-out;
+        }
+
+        /* Custom Radio Button Styling for better visibility */
+        .custom-radio {
+            accent-color: #2563eb;
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+    </style>
+</head>
+<body class="text-gray-900 min-h-screen flex flex-col font-bold">
+
+    <!-- MENU SCREEN -->
+    <div id="menu-screen" class="flex-1 flex flex-col items-center justify-center p-4 w-full max-w-2xl mx-auto">
+        
+        <!-- Header / Titles -->
+        <div class="text-center mb-8 w-full bg-white p-6 rounded-3xl shadow-lg border-4 border-blue-200">
+            <h1 class="text-5xl md:text-6xl text-blue-700 tracking-wider mb-4 animate-pop">找找看 對對碰</h1>
+            <h2 class="text-2xl md:text-3xl text-gray-700 mb-2">找出兩張圖卡中<span class="text-red-600">一樣的圖案</span></h2>
+            <p class="text-lg md:text-xl text-gray-500">網頁遊戲設計: 丁琬珮老師</p>
+        </div>
+
+        <!-- Settings Panel -->
+        <div class="bg-white p-6 md:p-8 rounded-3xl shadow-lg border-4 border-blue-200 w-full space-y-6">
+            
+            <!-- Category Selection -->
+            <div>
+                <h3 class="text-2xl text-blue-800 mb-3 border-b-2 border-blue-100 pb-2">選擇主題圖庫：</h3>
+                <div class="flex flex-wrap gap-4 text-xl">
+                    <label class="flex items-center space-x-2 cursor-pointer bg-blue-50 px-4 py-2 rounded-xl border-2 border-blue-200 hover:bg-blue-100 transition">
+                        <input type="radio" name="category" value="fruits" class="custom-radio" checked>
+                        <span>🍎 水果類</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer bg-blue-50 px-4 py-2 rounded-xl border-2 border-blue-200 hover:bg-blue-100 transition">
+                        <input type="radio" name="category" value="items" class="custom-radio">
+                        <span>☎️ 生活用品類</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer bg-blue-50 px-4 py-2 rounded-xl border-2 border-blue-200 hover:bg-blue-100 transition">
+                        <input type="radio" name="category" value="animals" class="custom-radio">
+                        <span>🐶 動物類</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer bg-blue-50 px-4 py-2 rounded-xl border-2 border-blue-200 hover:bg-blue-100 transition">
+                        <input type="radio" name="category" value="vegetables" class="custom-radio">
+                        <span>🥬 蔬菜類</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer bg-blue-50 px-4 py-2 rounded-xl border-2 border-blue-200 hover:bg-blue-100 transition">
+                        <input type="radio" name="category" value="mixed" class="custom-radio">
+                        <span>🌟 綜合用品</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Difficulty Selection -->
+            <div>
+                <h3 class="text-2xl text-blue-800 mb-3 border-b-2 border-blue-100 pb-2">選擇難度：</h3>
+                <div class="flex flex-wrap gap-4 text-xl">
+                    <label class="flex items-center space-x-2 cursor-pointer bg-green-50 px-4 py-2 rounded-xl border-2 border-green-200 hover:bg-green-100 transition">
+                        <input type="radio" name="difficulty" value="3" class="custom-radio" checked>
+                        <span>難度一 (3個圖案)</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer bg-green-50 px-4 py-2 rounded-xl border-2 border-green-200 hover:bg-green-100 transition">
+                        <input type="radio" name="difficulty" value="5" class="custom-radio">
+                        <span>難度二 (5個圖案)</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer bg-green-50 px-4 py-2 rounded-xl border-2 border-green-200 hover:bg-green-100 transition">
+                        <input type="radio" name="difficulty" value="8" class="custom-radio">
+                        <span>難度三 (8個圖案)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Timer Selection -->
+        <div>
+            <h3 class="text-2xl text-blue-800 mb-3 border-b-2 border-blue-100 pb-2">每回合秒數：</h3>
+            <div class="flex flex-wrap gap-4 text-xl">
+                <label class="flex items-center space-x-2 cursor-pointer bg-yellow-50 px-4 py-2 rounded-xl border-2 border-yellow-200 hover:bg-yellow-100 transition">
+                    <input type="radio" name="timer" value="unlimited" class="custom-radio" checked>
+                    <span>無限制</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer bg-yellow-50 px-4 py-2 rounded-xl border-2 border-yellow-200 hover:bg-yellow-100 transition">
+                    <input type="radio" name="timer" value="30" class="custom-radio">
+                    <span>30秒</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer bg-yellow-50 px-4 py-2 rounded-xl border-2 border-yellow-200 hover:bg-yellow-100 transition">
+                    <input type="radio" name="timer" value="60" class="custom-radio">
+                    <span>60秒</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Start Button -->
+            <div class="pt-4">
+                <button onclick="startGame()" class="w-full bg-blue-600 hover:bg-blue-500 text-white text-3xl py-5 rounded-2xl shadow-xl transform transition hover:-translate-y-1 active:translate-y-1">
+                    開始遊戲
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="game-screen" class="hidden flex-1 flex flex-col w-full max-w-4xl mx-auto p-4 h-screen">
+        
+        <!-- Game Header (Top Bar) -->
+        <div class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-md border-4 border-blue-200 mb-6">
+            <div class="text-2xl md:text-3xl text-blue-800">
+                題數: <span id="score-display" class="text-red-600 text-3xl md:text-4xl">0 / 10</span>
+            </div>
+            
+            <div id="timer-display-container" class="text-2xl md:text-3xl text-gray-700 bg-gray-100 px-4 py-2 rounded-xl border-2 border-gray-300">
+                時間: <span id="timer-display" class="text-blue-600">無限制</span>
+            </div>
+
+            <div class="flex space-x-3">
+                <button onclick="togglePause()" id="pause-btn" class="bg-yellow-400 hover:bg-yellow-300 text-yellow-900 text-xl md:text-2xl px-4 py-2 rounded-xl shadow border-2 border-yellow-500">
+                    ⏸️ 暫停
+                </button>
+                <button onclick="backToMenu()" class="bg-gray-300 hover:bg-gray-200 text-gray-800 text-xl md:text-2xl px-4 py-2 rounded-xl shadow border-2 border-gray-400">
+                    返回
+                </button>
+            </div>
+        </div>
+
+        <!-- Cards Container -->
+        <!-- Stack vertically on mobile, side-by-side on desktop -->
+        <div id="cards-container" class="flex-1 flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12 pb-8">
+            <!-- Card 1 -->
+            <div id="card-1" class="game-card"></div>
+            <!-- Card 2 -->
+            <div id="card-2" class="game-card"></div>
+        </div>
+        
+        <div class="text-center text-xl md:text-2xl text-gray-600 pb-4">
+            請點擊兩張卡片中<span class="text-red-600">相同的圖案</span>！
+        </div>
+    </div>
+
+    <!-- PAUSE / GAME OVER OVERLAY -->
+    <div id="overlay" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white p-8 md:p-12 rounded-3xl shadow-2xl text-center max-w-sm w-11/12 border-8 border-blue-400">
+            <h2 id="overlay-title" class="text-5xl text-blue-800 mb-6">已暫停</h2>
+            <p id="overlay-msg" class="text-2xl text-gray-700 mb-8">喝口水，休息一下！</p>
+            <button id="overlay-btn" onclick="togglePause()" class="w-full bg-green-500 hover:bg-green-400 text-white text-3xl py-4 rounded-xl shadow-lg border-b-4 border-green-700 active:border-b-0 active:translate-y-1">
+                繼續遊戲
+            </button>
+            <button id="overlay-restart-btn" onclick="backToMenu()" class="hidden w-full mt-4 bg-gray-200 hover:bg-gray-100 text-gray-800 text-2xl py-4 rounded-xl shadow border-2 border-gray-300">
+                回主選單
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- GAME DATA & CONFIGURATION ---
+        const iconsData = {
+            fruits: ['🍎','🍌','🍉','🍇','🍓','🍒','🍍','🥝','🥑','🍊','🍋','🥭','🍑','🍐','🍈','🥥','🍅','🍆','🌽','🥕','🫐','🍈','🍎','🍏'],
+            items: ['⏰','☎️','📺','💡','🪥','🧻','✂️','✏️','🌂','🔑','🧲','🧹','🛒','🛋️','🛏️','🪑','🧯','🔦','🛁','🚽','🎒','👞','👕','🧢'],
+            animals: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🦆','🦉','🐝','🐢','🦋','🐟','🐘'],
+            vegetables: ['🥬','🥦','🥒','🌶️','🧄','🧅','🍄','🥜','🌰','🥔','🍠','🫘','🫛','🌱','🌿','🌾','🌽','🥕','🍅','🍆','🥗','🎃','🥑','🥬']
+        };
+
+        // Predefined precise positions to completely avoid overlapping (Percentages of card size)
+        // Ensure items stay well within the circle. Center is (50, 50).
+        const layouts = {
+            3: [
+                {x: 50, y: 25}, {x: 25, y: 65}, {x: 75, y: 65}
+            ],
+            5: [
+                {x: 50, y: 20}, {x: 80, y: 45}, {x: 65, y: 78}, {x: 35, y: 78}, {x: 20, y: 45}
+            ],
+            8: [
+                {x: 50, y: 15},  // Top
+                {x: 20, y: 35},  // Top Left
+                {x: 80, y: 35},  // Top Right
+                {x: 18, y: 65},  // Bottom Left
+                {x: 82, y: 65},  // Bottom Right
+                {x: 35, y: 85},  // Bottom Center-Left
+                {x: 65, y: 85},  // Bottom Center-Right
+                {x: 50, y: 50}   // Center
+            ]
+        };
+
+        // --- STATE VARIABLES ---
+        const MAX_QUESTIONS = 10;
+        let currentSettings = {
+            category: 'fruits',
+            difficulty: 3, // 3, 5, 8
+            timer: 'unlimited' // 'unlimited', 30, 60
+        };
+        let score = 0;
+        let isPlaying = false;
+        let isPaused = false;
+        let timerInterval = null;
+        let timeLeft = 0;
+        let currentMatchIcon = '';
+        let isProcessingClick = false;
+
+        // --- DOM ELEMENTS ---
+        const menuScreen = document.getElementById('menu-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const scoreDisplay = document.getElementById('score-display');
+        const timerDisplay = document.getElementById('timer-display');
+        const card1 = document.getElementById('card-1');
+        const card2 = document.getElementById('card-2');
+        const cardsContainer = document.getElementById('cards-container');
+        
+        const overlay = document.getElementById('overlay');
+        const overlayTitle = document.getElementById('overlay-title');
+        const overlayMsg = document.getElementById('overlay-msg');
+        const overlayBtn = document.getElementById('overlay-btn');
+        const overlayRestartBtn = document.getElementById('overlay-restart-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+
+        // --- CORE FUNCTIONS ---
+
+        function startGame() {
+            // Read settings
+            const catRadios = document.getElementsByName('category');
+            for(let r of catRadios) if(r.checked) currentSettings.category = r.value;
+            
+            const diffRadios = document.getElementsByName('difficulty');
+            for(let r of diffRadios) if(r.checked) currentSettings.difficulty = parseInt(r.value);
+            
+            const timerRadios = document.getElementsByName('timer');
+            for(let r of timerRadios) if(r.checked) {
+                currentSettings.timer = r.value === 'unlimited' ? 'unlimited' : parseInt(r.value);
+            }
+
+            // Reset state
+            score = 0;
+            scoreDisplay.innerText = `${score} / ${MAX_QUESTIONS}`;
+            isPlaying = true;
+            isPaused = false;
+            isProcessingClick = false;
+            
+            // Switch Screens
+            menuScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            overlay.classList.add('hidden');
+
+            // Handle Timer for the entire game
+            clearInterval(timerInterval);
+            if (currentSettings.timer === 'unlimited') {
+                timerDisplay.innerText = "無限制";
+                timerDisplay.classList.remove('text-red-600');
+                timerDisplay.classList.add('text-blue-600');
+            } else {
+                timeLeft = currentSettings.timer;
+                updateTimerUI();
+                timerInterval = setInterval(timerTick, 1000);
+            }
+
+            startRound();
+        }
+
+        function startRound() {
+            if (!isPlaying) return;
+            generateCards();
+        }
+
+        function timerTick() {
+            if (isPaused || !isPlaying) return;
+            
+            timeLeft--;
+            updateTimerUI();
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                handleGameOver("時間到！");
+            }
+        }
+
+        function updateTimerUI() {
+            timerDisplay.innerText = timeLeft + " 秒";
+            if (timeLeft <= 5) {
+                timerDisplay.classList.remove('text-blue-600');
+                timerDisplay.classList.add('text-red-600', 'animate-pop');
+            } else {
+                timerDisplay.classList.remove('text-red-600', 'animate-pop');
+                timerDisplay.classList.add('text-blue-600');
+            }
+        }
+
+        function generateCards() {
+            const n = currentSettings.difficulty;
+            
+            let pool;
+            if (currentSettings.category === 'mixed') {
+                // Combine all arrays into one large pool for the mixed category
+                pool = [...iconsData.fruits, ...iconsData.items, ...iconsData.animals, ...iconsData.vegetables];
+            } else {
+                pool = [...iconsData[currentSettings.category]];
+            }
+            
+            // Shuffle pool to pick random items
+            shuffleArray(pool);
+            
+            // Pick the matching icon
+            currentMatchIcon = pool[0];
+            
+            let c1Icons = [currentMatchIcon];
+            let c2Icons = [currentMatchIcon];
+            
+            // Fill the rest of the cards with UNIQUE icons from the pool
+            for(let i = 1; i < n; i++) {
+                c1Icons.push(pool[i]);
+            }
+            for(let i = n; i < (2 * n) - 1; i++) {
+                c2Icons.push(pool[i]);
+            }
+            
+            // Shuffle the order within each card
+            shuffleArray(c1Icons);
+            shuffleArray(c2Icons);
+            
+            // Render them
+            renderCard(card1, c1Icons, n);
+            renderCard(card2, c2Icons, n);
+            
+            // Entrance animation
+            cardsContainer.classList.remove('animate-pop');
+            void cardsContainer.offsetWidth; // Trigger reflow
+            cardsContainer.classList.add('animate-pop');
+        }
+
+        function renderCard(cardElement, iconsList, n) {
+            cardElement.innerHTML = ''; // Clear previous
+            
+            // Determine font size based on difficulty (amount of items)
+            let fontSizeClass = 'text-7xl md:text-8xl'; // N=3
+            if (n === 5) fontSizeClass = 'text-6xl md:text-7xl';
+            if (n === 8) fontSizeClass = 'text-5xl md:text-6xl';
+
+            const layoutPos = [...layouts[n]];
+            // Optionally shuffle the predefined positions so the layout feels more random
+            shuffleArray(layoutPos); 
+
+            iconsList.forEach((icon, index) => {
+                const pos = layoutPos[index];
+                const el = document.createElement('div');
+                el.innerText = icon;
+                el.className = `card-icon ${fontSizeClass}`;
+                el.style.left = `${pos.x}%`;
+                el.style.top = `${pos.y}%`;
+                
+                // Add slight random rotation (-30deg to 30deg) to make it organic
+                const rotation = Math.floor(Math.random() * 60) - 30;
+                // Add exact transform with rotation because Tailwind's rotation utility might get overridden
+                el.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+                
+                el.onclick = () => handleItemClick(icon, cardElement);
+                cardElement.appendChild(el);
+            });
+        }
+
+        function handleItemClick(clickedIcon, cardElement) {
+            if (isPaused || !isPlaying || isProcessingClick) return;
+
+            if (clickedIcon === currentMatchIcon) {
+                // CORRECT
+                isProcessingClick = true;
+                score += 1;
+                scoreDisplay.innerText = `${score} / ${MAX_QUESTIONS}`;
+                scoreDisplay.classList.add('animate-pop');
+                setTimeout(() => scoreDisplay.classList.remove('animate-pop'), 400);
+
+                // Visual feedback for correctness (flash green border)
+                card1.style.borderColor = '#22c55e'; // Green
+                card2.style.borderColor = '#22c55e';
+
+                setTimeout(() => {
+                    card1.style.borderColor = '#1e3a8a'; // Reset to Blue
+                    card2.style.borderColor = '#1e3a8a';
+                    isProcessingClick = false;
+                    
+                    if (score >= MAX_QUESTIONS) {
+                        clearInterval(timerInterval);
+                        handleGameOver("恭喜通關！");
+                    } else {
+                        startRound();
+                    }
+                }, 500); // Wait half a second then next round
+
+            } else {
+                // WRONG
+                cardsContainer.classList.remove('animate-shake');
+                void cardsContainer.offsetWidth;
+                cardsContainer.classList.add('animate-shake');
+                
+                cardElement.style.borderColor = '#ef4444'; // Red
+                setTimeout(() => {
+                     cardElement.style.borderColor = '#1e3a8a';
+                }, 400);
+            }
+        }
+
+        function togglePause() {
+            if (!isPlaying) return;
+            
+            isPaused = !isPaused;
+            if (isPaused) {
+                // Show overlay
+                overlayTitle.innerText = "已暫停";
+                overlayTitle.className = "text-5xl text-blue-800 mb-6";
+                overlayMsg.innerText = "喝口水，休息一下！";
+                overlayBtn.innerText = "繼續遊戲";
+                overlayBtn.onclick = togglePause;
+                overlayRestartBtn.classList.remove('hidden');
+                overlay.classList.remove('hidden');
+            } else {
+                // Hide overlay
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function handleGameOver(reason) {
+            isPlaying = false;
+            overlayTitle.innerText = reason;
+            
+            if (reason === "恭喜通關！") {
+                overlayTitle.className = "text-5xl text-green-600 mb-6";
+            } else {
+                overlayTitle.className = "text-5xl text-red-600 mb-6";
+            }
+            
+            overlayMsg.innerText = `本次成績: 答對 ${score} / ${MAX_QUESTIONS} 題`;
+            overlayBtn.innerText = "再玩一次";
+            overlayBtn.onclick = startGame;
+            overlayRestartBtn.classList.remove('hidden');
+            overlay.classList.remove('hidden');
+        }
+
+        function backToMenu() {
+            clearInterval(timerInterval);
+            isPlaying = false;
+            isPaused = false;
+            overlay.classList.add('hidden');
+            gameScreen.classList.add('hidden');
+            menuScreen.classList.remove('hidden');
+        }
+
+        // --- UTILITY ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+    </script>
+</body>
+</html>
